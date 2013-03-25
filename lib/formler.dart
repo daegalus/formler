@@ -3,6 +3,7 @@ import 'dart:collection';
 import 'dart:io';
 import 'dart:async';
 import 'dart:uri';
+import 'dart:typeddata';
 part 'helper/base64_decoder.dart';
 
 class Formler {
@@ -147,8 +148,8 @@ class Formler {
   void _dataGatherProcess() {
     if(dataGather.length > 0) {
       if(formData[currentName]['transferEncoding'] == "base64") {
-        if(formData[currentName]['data'] == null) { formData[currentName]['data'] = ''; }
-        formData[currentName]['data'] += base64Decoder.decode(dataGather);
+        if(formData[currentName]['data'] == null) { formData[currentName]['data'] = []; }
+        formData[currentName]['data'].addAll(base64Decoder.decode(new String.fromCharCodes(dataGather)));
       }
       else if(formData[currentName]['transferEncoding'] == "quoted-printable") {
         if(formData[currentName]['data'] == null) { formData[currentName]['data'] = ''; }
