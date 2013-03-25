@@ -1,21 +1,21 @@
 part of formler;
 
 class FormlerSM {
-  static const Map S = {
-    "START": 1,
-    "START_BOUNDARY": 2,
-    "HEADER_FIELD_START" : 3,
-    "HEADER_FIELD" : 4,
-    "HEADER_VALUE_START" : 5,
-    "HEADER_VALUE" : 6,
-    "HEADER_VALUE_ALMOST_DONE" : 7,
-    "HEADERS_ALMOST_DONE" : 8,
-    "PART_DATA_START" : 9,
-    "PART_DATA" : 10,
-    "PART_END" : 11,
-    "END" : 12
+  static final Map S = {
+    "START": 0,
+    "START_BOUNDARY": 1,
+    "HEADER_FIELD_START" : 2,
+    "HEADER_FIELD" : 3,
+    "HEADER_VALUE_START" : 4,
+    "HEADER_VALUE" : 5,
+    "HEADER_VALUE_ALMOST_DONE" : 6,
+    "HEADERS_ALMOST_DONE" : 7,
+    "PART_DATA_START" : 8,
+    "PART_DATA" : 9,
+    "PART_END" : 10,
+    "END" : 11
   };
-  static const Map C = {
+  static final Map C = {
     "LF" : 10,
     "CR" : 13,
     "SPACE" : 32,
@@ -25,7 +25,8 @@ class FormlerSM {
     "Z" : 122
   };
 
-  Map parseData = new Map();
+  Map callbacks;
+  Map markers = new Map();
   List<int> data;
   String boundary;
   int state;
@@ -35,9 +36,10 @@ class FormlerSM {
   List<int> lookbehind;
   Map<int, bool> boundaryChars;
 
-  FormlerSM(List<int> data, String boundary) {
+  FormlerSM(List<int> data, String boundary, Map callbacks) {
     this.data = data;
     this.boundary = "\r\n--"+boundary;
+    this.callbacks = callbacks;
     state = S['START'];
 
     lookbehind = new List(boundary.length+8);
@@ -47,14 +49,15 @@ class FormlerSM {
     }
   }
 
-  int parse() {
+  Future<int> parse() {
+    Completer completer = new Completer();
     for(int i = 0; i < data.length; i++) {
-      int bit = data[i];
+      int bit = data[i]; print("${bit} - ${i} - "+explain()+" - ${index}");
 
       switch(state) {
         case S['START']:
           index = 0;
-          state = _START_BOUNDARY;
+          state = S['START_BOUNDARY'];
           continue startBoundary;
 
           startBoundary:
@@ -74,11 +77,10 @@ class FormlerSM {
             state = S['HEADER_FIELD_START'];
             break;
           }
-
-          if (bit != boundary[index+2]) {
+          if (bit != boundary.codeUnits[index+2]) {
             index = -2;
           }
-          if (bit == boundary[index+2]) {
+          if (bit == boundary.codeUnits[index+2]) {
             index++;
           }
           break;
@@ -91,7 +93,7 @@ class FormlerSM {
           headerField:
         case S['HEADER_FIELD']:
           if (bit == C['CR']) {
-            clear('headerField');
+            _clear('headerField');
             state = S['HEADERS_ALMOST_DONE'];
             break;
           }
@@ -120,11 +122,11 @@ class FormlerSM {
             break;
           }
 
-          _mark('headerValue');
+          _mark('headerValue', i);
           state = S['HEADER_VALUE'];
-          continue headerValue;
+          continue headerValueLabel;
 
-          headerValue:
+          headerValueLabel:
         case S['HEADER_VALUE']:
           if (bit == C['CR']) {
             _dataCallback('headerValue', i, true);
@@ -136,9 +138,10 @@ class FormlerSM {
           if (bit != C['LF']) {
             return i;
           }
-          state = C['HEADER_FIELD_START'];
+          state = S['HEADER_FIELD_START'];
           break;
         case S['HEADERS_ALMOST_DONE']:
+          print("LF = ${bit}}");
           if (bit != C['LF']) {
             return i;
           }
@@ -148,10 +151,10 @@ class FormlerSM {
           break;
         case S['PART_DATA_START']:
           state = S['PART_DATA'];
-          _mark('partData');
-          continue partData;
+          _mark('partData', i);
+          continue partDataLabel;
 
-          partData:
+          partDataLabel:
         case S['PART_DATA']:
           prevIndex = index;
 
@@ -208,7 +211,7 @@ class FormlerSM {
           if (index > 0) {
             lookbehind[index-1] = bit;
           } else if (prevIndex > 0) {
-            _callback('partData', lookbehind, 0, prevIndex);
+            _callback('partData', 0, prevIndex);
             prevIndex = 0;
             _mark('partData');
             i--;
@@ -225,27 +228,22 @@ class FormlerSM {
     _dataCallback('headerValue');
     _dataCallback('partData');
 
-    return len;
+    return data.length;
   }
 
   void end() {
     if ((state == S['HEADER_FIELD_START'] && index == 0) ||
     (state == S['PART_DATA'] && index == boundary.length)) {
-      _callback(this, 'partEnd');
-      _callback(this, 'end');
+      _callback('partEnd');
+      _callback('end');
     } else if (this.state != S['END']) {
       return new Error('Formler.end(): stream ended unexpectedly: ' + explain());
     }
   }
   void explain() {
-    var stateNum = 0;
-    for(int j = 0; j <= S.values; j++) {
-      if(S.values[j] == state) {
-        stateNum = j;
-        break;
-      }
-    }
-    return 'state = ${S.keys[j]}';
+    var stateVal = S.values.toList().indexOf(state);
+    print(state);
+    return 'state = ${S.keys.toList()[stateVal]}';
   }
 
   int _lower(int character) {
@@ -253,36 +251,36 @@ class FormlerSM {
   }
 
   void _mark(String name, int i) {
-    parseData[name+'Mark'] = i;
+    markers[name+'Mark'] = i;
   }
 
   void _clear(String name) {
-    parseData.remove(name+'Mark');
+    markers.remove(name+'Mark');
   }
 
-  void _callback(String name, [start = 0, end = -1]) {
+  void _callback(String name, [int start = null, int end = null]) {
     if (start != null && start == end) {
       return;
     }
 
     var callbackSymbol = 'on'+name.substring(0, 1).toUpperCase()+name.substring(1);
-    if (parseData.containsKey(callbackSymbol)) {
-      parseData[callbackSymbol](start, end);
+    if (callbacks.containsKey(callbackSymbol)) {
+      callbacks[callbackSymbol](data, start, end);
     }
   }
 
-  void _dataCallback(String name, int i, bool clear) {
+  void _dataCallback(String name, [int i = 0, bool clear = false]) {
     var markSymbol = name+'Mark';
-    if (!(parseData.containsKey(markSymbol))) {
+    if (!(markers.containsKey(markSymbol))) {
       return;
     }
 
     if (!clear) {
-      callback(name, parseData[markSymbol], data.length);
-      parseData[markSymbol] = 0;
+      _callback(name, markers[markSymbol], data.length);
+      markers[markSymbol] = 0;
     } else {
-      callback(name, parseData[markSymbol], i);
-      parseData.remove(markSymbol);
+      _callback(name, markers[markSymbol], i);
+      markers.remove(markSymbol);
     }
   }
 }
