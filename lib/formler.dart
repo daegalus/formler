@@ -89,7 +89,8 @@ class Formler {
           state = HEADERS;
           break;
         }
-        _dataGatherProcess();
+        //_dataGatherProcess();
+        currentName = '';
         state = HEADERS;
         break;
       case HEADERS:
@@ -97,15 +98,15 @@ class Formler {
           var match = dispFileRegex.firstMatch(lineString);
           var name = match.group(2);
           var filename = match.group(3);
-          currentName = name;
-          formData[name] = {};
-          formData[name]['filename'] = filename;
+          currentName = match.group(2);
+          formData[currentName] = {};
+          formData[currentName]['filename'] = filename;
           break;
         } else if(dispRegex.hasMatch(lineString)) {
           var match = dispRegex.firstMatch(lineString);
           var name = match.group(2);
-          currentName = name;
-          formData[name] = {};
+          currentName = match.group(2);
+          formData[currentName] = {};
           break;
         } else if(typeRegex.hasMatch(lineString)) {
           var match = typeRegex.firstMatch(lineString);
@@ -132,7 +133,8 @@ class Formler {
           break;
         }
         if(lineString.contains("--${boundary}")) {
-          state = BOUNDARY;
+          _dataGatherProcess();
+          state = HEADERS;
           break;
         }
 
@@ -140,7 +142,6 @@ class Formler {
         dataGather.addAll(line);
         break;
       case END:
-        _dataGatherProcess();
         break;
     };
   }
@@ -155,7 +156,8 @@ class Formler {
         if(formData[currentName]['data'] == null) { formData[currentName]['data'] = ''; }
         formData[currentName]['data'] += new String.fromCharCodes(dataGather);
       }
-      else if(formData[currentName]['transferEncoding'] == null && formData[currentName]['mime'] == "text/plain"){
+      else if((formData[currentName]['transferEncoding'] == null && formData[currentName]['mime'] == "text/plain") ||
+              (formData[currentName]['filename'] == null && formData[currentName]['transferEncoding'] == null)){
         if(formData[currentName]['data'] == null) { formData[currentName]['data'] = ''; }
         formData[currentName]['data'] += new String.fromCharCodes(dataGather);
       }
