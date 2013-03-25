@@ -85,7 +85,7 @@ class Formler {
     String lineString = new String.fromCharCodes(line);
     switch(state) {
       case BOUNDARY:
-        if(lineString.contains("--${boundary}")) {
+        if(lineString.toLowerCase().contains("--${boundary}")) {
           state = HEADERS;
           break;
         }
@@ -127,12 +127,12 @@ class Formler {
         }
         break;
       case PART_DATA:
-        if(lineString.contains("--${boundary}--")) {
+        if(lineString.toLowerCase().contains("--${boundary}--")) {
           _dataGatherProcess();
           state = END;
           break;
         }
-        if(lineString.contains("--${boundary}")) {
+        if(lineString.toLowerCase().contains("--${boundary}")) {
           _dataGatherProcess();
           state = HEADERS;
           break;

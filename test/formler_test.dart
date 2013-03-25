@@ -13,7 +13,7 @@ main() {
   'YQ=='
   '\r\n--AaB03x--';
 
-  Formler formler = new Formler(postData.codeUnits, "AaB03x");
+  Formler formler = new Formler(postData.codeUnits, "aab03x");
   Map data = formler.parse();
   print(data);
 }
