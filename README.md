@@ -27,11 +27,11 @@ dependencies:
 Start parsing ...
 
 ```dart
-// Encode a hex string to base32
+// Parse a Multipart form
 Formler formler = new Formler(bytes, "--someBoundaryStuff");
 Map form = formler.parse(); // -> {fieldName: .... }
 
-// base32 decoding to original string.
+// Parse a UrlEncoded form
 Formler.parseUrlEncoded("username=someValue+other%26val&password=eqwdawd9"); // -> { "username": "someValue other&val", "password": "eqwdawd9" }
 ```
 
