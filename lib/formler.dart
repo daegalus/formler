@@ -67,12 +67,24 @@ class Formler {
 
       var lookahead = (i+1 == data.length) ? data[i] : data[i+1];
 
-      if(bit == C['CR'] && lookahead == C['LF']) {
-        _stateLine(currentLine);
-        i++;
-        currentLine = [];
+      if(state == PART_DATA){
+        var lookaheadm = data[i+2];
+        if(bit == C['CR'] && lookahead == C['LF'] && lookaheadm == C['HYPHEN']) {
+          _stateLine(currentLine);
+          i++;
+          currentLine = [];
+          state = HEADERS;
+        } else {
+          currentLine.add(bit);
+        }
       } else {
-        currentLine.add(bit);
+        if(bit == C['CR'] && lookahead == C['LF']) {
+          _stateLine(currentLine);
+          i++;
+          currentLine = [];
+        } else {
+          currentLine.add(bit);
+        }
       }
       if(i == data.length - 1) {
         _stateLine(currentLine);
@@ -94,6 +106,11 @@ class Formler {
         state = HEADERS;
         break;
       case HEADERS:
+        if(lineString.toLowerCase().contains("--${boundary}")) {
+          _dataGatherProcess();
+          state = HEADERS;
+          break;
+        }
         if(dispFileRegex.hasMatch(lineString)) {
           var match = dispFileRegex.firstMatch(lineString);
           var name = match.group(2);
