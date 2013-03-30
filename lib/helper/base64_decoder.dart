@@ -1,4 +1,5 @@
-part of formler;
+library Base64Decoder;
+import 'dart:typeddata';
 
 class Base64Decoder {
 

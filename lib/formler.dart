@@ -4,7 +4,7 @@ import 'dart:io';
 import 'dart:async';
 import 'dart:uri';
 import 'dart:typeddata';
-part 'helper/base64_decoder.dart';
+import 'helper/base64_decoder.dart';
 
 class Formler {
 
