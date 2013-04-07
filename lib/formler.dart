@@ -35,6 +35,7 @@ class Formler {
   List<int> dataGather;
   int state;
   String currentName;
+  Map currentFile;
 
   Formler(List<int> data, String boundary) {
     this.data = data;
@@ -45,6 +46,7 @@ class Formler {
     dataGather = [];
     state = BOUNDARY;
     currentName = '';
+    currentFile = {};
   }
 
   static Map parseUrlEncoded(String content) {
@@ -116,24 +118,24 @@ class Formler {
           var name = match.group(2);
           var filename = match.group(3);
           currentName = match.group(2);
-          formData[currentName] = {};
-          formData[currentName]['filename'] = filename;
+          currentFile = {};
+          currentFile['filename'] = filename;
           break;
         } else if(dispRegex.hasMatch(lineString)) {
           var match = dispRegex.firstMatch(lineString);
           var name = match.group(2);
           currentName = match.group(2);
-          formData[currentName] = {};
+          currentFile = {};
           break;
         } else if(typeRegex.hasMatch(lineString)) {
           var match = typeRegex.firstMatch(lineString);
           var type = match.group(1);
-          formData[currentName]['mime'] = type;
+          currentFile['mime'] = type;
           break;
         } else if(transferRegex.hasMatch(lineString)) {
           var match = transferRegex.firstMatch(lineString);
           var transfer = match.group(1);
-          formData[currentName]['transferEncoding'] = transfer;
+          currentFile['transferEncoding'] = transfer;
           break;
         } else if(lineString == "") {
           state = PART_DATA;
@@ -165,24 +167,36 @@ class Formler {
 
   void _dataGatherProcess() {
     if(dataGather.length > 0) {
-      if(formData[currentName]['transferEncoding'] == "base64") {
-        if(formData[currentName]['data'] == null) { formData[currentName]['data'] = []; }
-        formData[currentName]['data'].addAll(base64Decoder.decode(new String.fromCharCodes(dataGather)));
+      if(currentFile['transferEncoding'] == "base64") {
+        if(currentFile['data'] == null) { currentFile['data'] = []; }
+        currentFile['data'].addAll(base64Decoder.decode(new String.fromCharCodes(dataGather)));
       }
-      else if(formData[currentName]['transferEncoding'] == "quoted-printable") {
-        if(formData[currentName]['data'] == null) { formData[currentName]['data'] = ''; }
-        formData[currentName]['data'] += new String.fromCharCodes(dataGather);
+      else if(currentFile['transferEncoding'] == "quoted-printable") {
+        if(currentFile['data'] == null) { currentFile['data'] = ''; }
+        currentFile['data'] += new String.fromCharCodes(dataGather);
       }
-      else if((formData[currentName]['transferEncoding'] == null && formData[currentName]['mime'] == "text/plain") ||
-              (formData[currentName]['filename'] == null && formData[currentName]['transferEncoding'] == null)){
-        if(formData[currentName]['data'] == null) { formData[currentName]['data'] = ''; }
-        formData[currentName]['data'] += new String.fromCharCodes(dataGather);
+      else if((currentFile['transferEncoding'] == null && currentFile['mime'] == "text/plain") ||
+              (currentFile['filename'] == null && currentFile['transferEncoding'] == null)){
+        if(currentFile['data'] == null) { currentFile['data'] = ''; }
+        currentFile['data'] += new String.fromCharCodes(dataGather);
       }
       else {
-        if(formData[currentName]['data'] == null) { formData[currentName]['data'] = []; }
-        formData[currentName]['data'].addAll(dataGather);
+        if(currentFile['data'] == null) { currentFile['data'] = []; }
+        currentFile['data'].addAll(dataGather);
       }
       dataGather.clear();
+    }
+
+    if (formData[currentName] == null) {
+      formData[currentName] = currentFile;
+    } else if (formData[currentName] is List) {
+      formData[currentName].add(currentFile);
+    } else {
+      // Is the second file. Create a list to store the results.
+      List<Map> files = new List<Map>();
+      files.add(formData[currentName]);
+      files.add(currentFile);
+      formData[currentName] = files;
     }
   }
 }
