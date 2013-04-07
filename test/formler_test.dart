@@ -4,6 +4,7 @@ import 'dart:io';
 
 main() {
   simpleTest();
+  multipleFileTest();
   complexTest();
 }
 
@@ -28,6 +29,42 @@ void simpleTest() {
     expect(data['file']['filename'], equals("image.jpg"));
     expect(data['file']['mime'], equals("image/jpeg"));
     expect(data['file']['transferEncoding'], equals("base64"));
+  });
+
+}
+
+void multipleFileTest() {
+  test("Multiple Fie Parsing Test", () {
+    String postData =  '--AaB03x\r\n'
+    'Content-Disposition: form-data; name="submit-name"\r\n'
+    '\r\n'
+    'Larry\r\n'
+    '--AaB03x\r\n'
+    'Content-Disposition: form-data; name="files"; filename="image.jpg"\r\n'
+    'Content-Type: image/jpeg\r\n'
+    'Content-Transfer-Encoding: base64\r\n'
+    '\r\n'
+    'YQ=='
+    '\r\n--AaB03x\r\n'
+    'Content-Disposition: form-data; name="files"; filename="image2.png"\r\n'
+    'Content-Type: image/png\r\n'
+    'Content-Transfer-Encoding: base64\r\n'
+    '\r\n'
+    'YQ=='
+    '\r\n--AaB03x--';
+
+    Formler formler = new Formler(postData.codeUnits, "aab03x");
+    Map data = formler.parse();
+
+    expect(data['submit-name']['data'], equals("Larry"));
+    List<Map> files = data['files'];
+    expect(files.length, equals(2));
+    expect(files[0]['filename'], equals("image.jpg"));
+    expect(files[0]['mime'], equals("image/jpeg"));
+    expect(files[0]['transferEncoding'], equals("base64"));
+    expect(files[1]['filename'], equals("image2.png"));
+    expect(files[1]['mime'], equals("image/png"));
+    expect(files[1]['transferEncoding'], equals("base64"));
   });
 
 }
