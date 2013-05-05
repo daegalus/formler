@@ -3,13 +3,13 @@ import 'dart:collection';
 import 'dart:io';
 import 'dart:async';
 import 'dart:uri';
-import 'dart:typeddata';
+import 'dart:typed_data';
 import 'helper/base64_decoder.dart';
 
 class Formler {
 
   final RegExp dispRegex = new RegExp(r'Content-Disposition: ([\S]+); name="([\S]+)"');
-  final RegExp dispFileRegex = new RegExp(r'Content-Disposition: ([\S]+); name="([\S]+)"; filename="([\w\.]+)"');
+  final RegExp dispFileRegex = new RegExp(r'Content-Disposition: ([\S]+); name="([\S]+)"; filename="([\w\._-\s]+)"');
   final RegExp typeRegex = new RegExp(r'Content-Type: ([\S]+)');
   final RegExp transferRegex = new RegExp(r'Content-Transfer-Encoding: ([\S]+)');
 
