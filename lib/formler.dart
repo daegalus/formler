@@ -4,7 +4,7 @@ import 'dart:io';
 import 'dart:async';
 import 'dart:uri';
 import 'dart:typed_data';
-import 'helper/base64_decoder.dart';
+import 'dart:crypto' as Crypto;
 
 class Formler {
 
@@ -28,7 +28,6 @@ class Formler {
   const PART_DATA = 2;
   const END = 3;
 
-  Base64Decoder base64Decoder;
   Map formData;
   List<int> data;
   String boundary;
@@ -41,7 +40,6 @@ class Formler {
     this.data = data;
     this.boundary = boundary;
 
-    base64Decoder = new Base64Decoder();
     formData = {};
     dataGather = [];
     state = BOUNDARY;
@@ -169,7 +167,7 @@ class Formler {
     if(dataGather.length > 0) {
       if(currentFile['transferEncoding'] == "base64") {
         if(currentFile['data'] == null) { currentFile['data'] = []; }
-        currentFile['data'].addAll(base64Decoder.decode(new String.fromCharCodes(dataGather)));
+        currentFile['data'].addAll(Crypto.CryptoUtils.base64StringToBytes(new String.fromCharCodes(dataGather)));
       }
       else if(currentFile['transferEncoding'] == "quoted-printable") {
         if(currentFile['data'] == null) { currentFile['data'] = ''; }
