@@ -22,10 +22,10 @@ class Formler {
       "Z" : 122
   };
 
-  const BOUNDARY = 0;
-  const HEADERS = 1;
-  const PART_DATA = 2;
-  const END = 3;
+  static const BOUNDARY = 0;
+  static const HEADERS = 1;
+  static const PART_DATA = 2;
+  static const END = 3;
 
   Map formData;
   List<int> data;
