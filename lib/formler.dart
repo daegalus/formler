@@ -2,9 +2,8 @@ library formler;
 import 'dart:collection';
 import 'dart:io';
 import 'dart:async';
-import 'dart:uri';
 import 'dart:typed_data';
-import 'dart:crypto' as Crypto;
+import 'package:crypto/crypto.dart' as Crypto;
 
 class Formler {
 
@@ -58,7 +57,7 @@ class Formler {
     return parsed;
   }
 
-  static String _urlDecode(String encoded) => decodeUriComponent(encoded.replaceAll("+", " "));
+  static String _urlDecode(String encoded) => Uri.decodeComponent(encoded.replaceAll("+", " "));
 
   Map parse() {
     List<int> currentLine = [];

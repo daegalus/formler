@@ -17,7 +17,7 @@ Features:
 pub.dartlang.org: (you can use 'any' instead of a version if you just want the latest always)
 ```yaml
 dependencies:
-  formler: 0.0.6
+  formler: 0.0.7
 ```
 
 ```dart
@@ -74,6 +74,9 @@ In Browser
 At the moment, this package does not work client-side as it uses server-side only UInt8Lists. I might have to wait till UInt8Arrays and UInt8Lists are merged into 1
 
 ## Release notes
+v0.0.7
+- Fixing package changes for Crypto and URI
+
 v0.0.6
 - Including fixes for TypedData and Regex and also switched to useing the Base64 Decode built into Crypto now.
 

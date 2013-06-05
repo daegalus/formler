@@ -1,8 +1,9 @@
 name: formler
-version: 0.0.6
+version: 0.0.7
 author: Yulian Kuncheff <yulian@kuncheff.com>
 description: A form parsing library. Multi-part, with files, and x-www-urlencoded.
 homepage: https://github.com/Daegalus/formler
 dependencies:
   logging: any
   unittest: any
+  crypto: any
