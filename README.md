@@ -21,7 +21,7 @@ dependencies:
 ```
 
 ```dart
-#import('package:formler/formler.dart');
+import 'package:formler/formler.dart';
 ```
 
 Start parsing ...
