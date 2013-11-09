@@ -17,7 +17,7 @@ Features:
 pub.dartlang.org: (you can use 'any' instead of a version if you just want the latest always)
 ```yaml
 dependencies:
-  formler: 0.0.8
+  formler: 0.1.0
 ```
 
 ```dart
@@ -74,6 +74,9 @@ In Browser
 At the moment, this package does not work client-side as it uses server-side only UInt8Lists. I might have to wait till UInt8Arrays and UInt8Lists are merged into 1
 
 ## Release notes
+v0.1.0
+- Dart 1.0 Readiness
+
 v0.0.8
 - Fixing analyzer complaints.
 
