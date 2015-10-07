@@ -19,7 +19,7 @@ Features:
 pub.dartlang.org: (you can use 'any' instead of a version if you just want the latest always)
 ```yaml
 dependencies:
-  formler: 0.1.0
+  formler: 0.1.1
 ```
 
 ```dart
