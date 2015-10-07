@@ -42,12 +42,27 @@ class Formler {
     currentFile = {};
   }
 
-  static Map parseUrlEncoded(String content) {
+  static void fprint(String output, [String severity = 'WARN', bool printErrors = false]) {
+    if (printErrors) print("[Formler][${severity}] ${output}");
+  }
+  static Map parseUrlEncoded(String content, [bool printErrors = true]) {
+    if (content.length <= 0) {
+      fprint("String passed into formler has a length of 0, skipping processing.", 'WARN' , printErrors);
+      return {};
+    }
     List<String> segments = content.split("&");
     Map parsed = {};
 
     for(String segment in segments) {
+      if (segment.length <= 0) {
+        fprint("Segment lenght is 0, please check for any extra & in your input of '${content}'.", 'WARN', printErrors);
+        continue;
+      }
       List<String> pair = segment.split('=');
+      if (pair[0].length <= 0) {
+        fprint("key length for '${segment}' is 0.", 'WARN', printErrors);
+        continue;
+      }
       parsed[pair[0]] = (pair.toList().length == 2) ? _urlDecode(pair[1]) : '';
     }
     return parsed;

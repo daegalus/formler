@@ -53,11 +53,12 @@ Actually does the parsing of the data and creates the data map of the contents.
 
 Returns `Map` representation of the parsed data.
 
-### (static) Formler.parseUrlEncoded(String postBody)
+### (static) Formler.parseUrlEncoded(String postBody, [bool printErrors = true])
 
 Parses a UrlEncoded post body string.
 
 * `postBody` - (String) A string of key/urlencoded value pairs.
+* `printErrors` - (Bool) Set to false if you don't want Formler to print warnings to STDOUT. Default is true.
 
 Returns `Map` representation of the parsed Data
 
@@ -76,6 +77,9 @@ In Browser
 At the moment, this package does not work client-side as it uses server-side only UInt8Lists. I might have to wait till UInt8Arrays and UInt8Lists are merged into 1
 
 ## Release notes
+v0.1.1
+- Fix empty string and handle malformed urlencoded strings gracefully.
+
 v0.1.0
 - Dart 1.0 Readiness
 

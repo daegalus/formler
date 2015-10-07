@@ -3,9 +3,30 @@ import 'package:unittest/unittest.dart';
 import 'dart:io';
 
 main() {
+  emptyUrlEncodedTest();
+  malformedUrlEncodedTest();
   simpleTest();
   multipleFileTest();
   complexTest();
+}
+
+void emptyUrlEncodedTest() {
+  test("Empty String URLEncoded Test", () {
+    String postData = "";
+    var data = Formler.parseUrlEncoded(postData, false);
+
+    expect(data, equals({}));
+  });
+}
+
+void malformedUrlEncodedTest() {
+  test("Malformed String URLEncoded Test", () {
+    expect(Formler.parseUrlEncoded("parsed", false), equals({"parsed": ''}));
+    expect(Formler.parseUrlEncoded("parsed=", false), equals({"parsed": ''}));
+    expect(Formler.parseUrlEncoded("parsed=&", false), equals({"parsed": ''}));
+    expect(Formler.parseUrlEncoded("=test", false), equals({}));
+    expect(Formler.parseUrlEncoded("=test&", false), equals({}));
+  });
 }
 
 void simpleTest() {
