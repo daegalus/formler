@@ -1,4 +1,4 @@
-[![](https://drone.io/github.com/daegalus/formler/status.png)](https://drone.io/github.com/daegalus/formler/latest)
+[![Build Status](https://travis-ci.org/Daegalus/formler.svg?branch=master)](https://travis-ci.org/Daegalus/formler)
 
 # formler
 

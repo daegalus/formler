@@ -9,4 +9,4 @@ dependencies:
   crypto: ">=0.9.1 <0.10.0"
   logging: ">=0.9.3 <0.12.0"
 dev_dependencies:
-  unittest: ">=0.9.3 <0.12.0"
+  test: any
