@@ -1,5 +1,5 @@
 library formler;
-import 'package:crypto/crypto.dart' as Crypto;
+import 'dart:convert';
 
 class Formler {
 
@@ -177,7 +177,8 @@ class Formler {
     if(dataGather.length > 0) {
       if(currentFile['transferEncoding'] == "base64") {
         if(currentFile['data'] == null) { currentFile['data'] = []; }
-        currentFile['data'].addAll(Crypto.CryptoUtils.base64StringToBytes(new String.fromCharCodes(dataGather)));
+        Base64Codec base64codec = new Base64Codec.urlSafe();
+        currentFile['data'].addAll(base64codec.decode(new String.fromCharCodes(dataGather)));
       }
       else if(currentFile['transferEncoding'] == "quoted-printable") {
         if(currentFile['data'] == null) { currentFile['data'] = ''; }
