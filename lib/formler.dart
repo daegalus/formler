@@ -45,13 +45,13 @@ class Formler {
   static void fprint(String output, [String severity = 'WARN', bool printErrors = false]) {
     if (printErrors) print("[Formler][${severity}] ${output}");
   }
-  static Map parseUrlEncoded(String content, [bool printErrors = true]) {
+  static Map<String, String> parseUrlEncoded(String content, [bool printErrors = true]) {
     if (content.length <= 0) {
       fprint("String passed into formler has a length of 0, skipping processing.", 'WARN' , printErrors);
       return {};
     }
     List<String> segments = content.split("&");
-    Map parsed = {};
+    Map<String, String> parsed = {};
 
     for(String segment in segments) {
       if (segment.length <= 0) {
