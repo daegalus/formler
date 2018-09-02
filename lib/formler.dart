@@ -1,21 +1,24 @@
 library formler;
+
 import 'dart:convert';
 
 class Formler {
-
-  final RegExp dispRegex = new RegExp(r'Content-Disposition: ([\S]+); name="([\S]+)"');
-  final RegExp dispFileRegex = new RegExp(r'Content-Disposition: ([\S]+); name="([\S]+)"; filename="([\w\._-\s]+)"');
+  final RegExp dispRegex =
+      new RegExp(r'Content-Disposition: ([\S]+); name="([\S]+)"');
+  final RegExp dispFileRegex = new RegExp(
+      r'Content-Disposition: ([\S]+); name="([\S]+)"; filename="([\w\._-\s]+)"');
   final RegExp typeRegex = new RegExp(r'Content-Type: ([\S]+)');
-  final RegExp transferRegex = new RegExp(r'Content-Transfer-Encoding: ([\S]+)');
+  final RegExp transferRegex =
+      new RegExp(r'Content-Transfer-Encoding: ([\S]+)');
 
   static final Map C = {
-      "LF" : 10,
-      "CR" : 13,
-      "SPACE" : 32,
-      "HYPHEN" : 45,
-      "COLON" : 58,
-      "A" : 97,
-      "Z" : 122
+    "LF": 10,
+    "CR": 13,
+    "SPACE": 32,
+    "HYPHEN": 45,
+    "COLON": 58,
+    "A": 97,
+    "Z": 122
   };
 
   static const BOUNDARY = 0;
@@ -42,20 +45,28 @@ class Formler {
     currentFile = {};
   }
 
-  static void fprint(String output, [String severity = 'WARN', bool printErrors = false]) {
+  static void fprint(String output,
+      [String severity = 'WARN', bool printErrors = false]) {
     if (printErrors) print("[Formler][${severity}] ${output}");
   }
+
   static Map parseUrlEncoded(String content, [bool printErrors = true]) {
     if (content.length <= 0) {
-      fprint("String passed into formler has a length of 0, skipping processing.", 'WARN' , printErrors);
+      fprint(
+          "String passed into formler has a length of 0, skipping processing.",
+          'WARN',
+          printErrors);
       return {};
     }
     List<String> segments = content.split("&");
     Map parsed = {};
 
-    for(String segment in segments) {
+    for (String segment in segments) {
       if (segment.length <= 0) {
-        fprint("Segment lenght is 0, please check for any extra & in your input of '${content}'.", 'WARN', printErrors);
+        fprint(
+            "Segment lenght is 0, please check for any extra & in your input of '${content}'.",
+            'WARN',
+            printErrors);
         continue;
       }
       List<String> pair = segment.split('=');
@@ -68,18 +79,21 @@ class Formler {
     return parsed;
   }
 
-  static String _urlDecode(String encoded) => Uri.decodeComponent(encoded.replaceAll("+", " "));
+  static String _urlDecode(String encoded) =>
+      Uri.decodeComponent(encoded.replaceAll("+", " "));
 
   Map parse() {
     List<int> currentLine = [];
-    for(int i = 0; i < data.length; i++) {
+    for (int i = 0; i < data.length; i++) {
       var bit = data[i];
 
-      var lookahead = (i+1 == data.length) ? data[i] : data[i+1];
+      var lookahead = (i + 1 == data.length) ? data[i] : data[i + 1];
 
-      if(state == PART_DATA){
-        var lookaheadm = data[i+2];
-        if(bit == C['CR'] && lookahead == C['LF'] && lookaheadm == C['HYPHEN']) {
+      if (state == PART_DATA) {
+        var lookaheadm = data[i + 2];
+        if (bit == C['CR'] &&
+            lookahead == C['LF'] &&
+            lookaheadm == C['HYPHEN']) {
           _stateLine(currentLine);
           i++;
           currentLine = [];
@@ -88,7 +102,7 @@ class Formler {
           currentLine.add(bit);
         }
       } else {
-        if(bit == C['CR'] && lookahead == C['LF']) {
+        if (bit == C['CR'] && lookahead == C['LF']) {
           _stateLine(currentLine);
           i++;
           currentLine = [];
@@ -96,7 +110,7 @@ class Formler {
           currentLine.add(bit);
         }
       }
-      if(i == data.length - 1) {
+      if (i == data.length - 1) {
         _stateLine(currentLine);
       }
     }
@@ -105,9 +119,9 @@ class Formler {
 
   void _stateLine(List<int> line) {
     String lineString = new String.fromCharCodes(line);
-    switch(state) {
+    switch (state) {
       case BOUNDARY:
-        if(lineString.toLowerCase().contains("--${boundary}")) {
+        if (lineString.toLowerCase().contains("--${boundary}")) {
           state = HEADERS;
           break;
         }
@@ -116,36 +130,36 @@ class Formler {
         state = HEADERS;
         break;
       case HEADERS:
-        if(lineString.toLowerCase().contains("--${boundary}")) {
+        if (lineString.toLowerCase().contains("--${boundary}")) {
           _dataGatherProcess();
           state = HEADERS;
           break;
         }
-        if(dispFileRegex.hasMatch(lineString)) {
+        if (dispFileRegex.hasMatch(lineString)) {
           var match = dispFileRegex.firstMatch(lineString);
           var name = match.group(2);
           var filename = match.group(3);
-          currentName = match.group(2);
+          currentName = name;
           currentFile = {};
           currentFile['filename'] = filename;
           break;
-        } else if(dispRegex.hasMatch(lineString)) {
+        } else if (dispRegex.hasMatch(lineString)) {
           var match = dispRegex.firstMatch(lineString);
           var name = match.group(2);
-          currentName = match.group(2);
+          currentName = name;
           currentFile = {};
           break;
-        } else if(typeRegex.hasMatch(lineString)) {
+        } else if (typeRegex.hasMatch(lineString)) {
           var match = typeRegex.firstMatch(lineString);
           var type = match.group(1);
           currentFile['mime'] = type;
           break;
-        } else if(transferRegex.hasMatch(lineString)) {
+        } else if (transferRegex.hasMatch(lineString)) {
           var match = transferRegex.firstMatch(lineString);
           var transfer = match.group(1);
           currentFile['transferEncoding'] = transfer;
           break;
-        } else if(lineString == "") {
+        } else if (lineString == "") {
           state = PART_DATA;
           break;
         } else {
@@ -154,43 +168,50 @@ class Formler {
         }
         break;
       case PART_DATA:
-        if(lineString.toLowerCase().contains("--${boundary}--")) {
+        if (lineString.toLowerCase().contains("--${boundary}--")) {
           _dataGatherProcess();
           state = END;
           break;
         }
-        if(lineString.toLowerCase().contains("--${boundary}")) {
+        if (lineString.toLowerCase().contains("--${boundary}")) {
           _dataGatherProcess();
           state = HEADERS;
           break;
         }
 
-
         dataGather.addAll(line);
         break;
       case END:
         break;
-    };
+    }
   }
 
   void _dataGatherProcess() {
-    if(dataGather.length > 0) {
-      if(currentFile['transferEncoding'] == "base64") {
-        if(currentFile['data'] == null) { currentFile['data'] = []; }
+    if (dataGather.length > 0) {
+      if (currentFile['transferEncoding'] == "base64") {
+        if (currentFile['data'] == null) {
+          currentFile['data'] = [];
+        }
         Base64Codec base64codec = new Base64Codec.urlSafe();
-        currentFile['data'].addAll(base64codec.decode(new String.fromCharCodes(dataGather)));
-      }
-      else if(currentFile['transferEncoding'] == "quoted-printable") {
-        if(currentFile['data'] == null) { currentFile['data'] = ''; }
+        currentFile['data']
+            .addAll(base64codec.decode(new String.fromCharCodes(dataGather)));
+      } else if (currentFile['transferEncoding'] == "quoted-printable") {
+        if (currentFile['data'] == null) {
+          currentFile['data'] = '';
+        }
         currentFile['data'] += new String.fromCharCodes(dataGather);
-      }
-      else if((currentFile['transferEncoding'] == null && currentFile['mime'] == "text/plain") ||
-              (currentFile['filename'] == null && currentFile['transferEncoding'] == null)){
-        if(currentFile['data'] == null) { currentFile['data'] = ''; }
+      } else if ((currentFile['transferEncoding'] == null &&
+              currentFile['mime'] == "text/plain") ||
+          (currentFile['filename'] == null &&
+              currentFile['transferEncoding'] == null)) {
+        if (currentFile['data'] == null) {
+          currentFile['data'] = '';
+        }
         currentFile['data'] += new String.fromCharCodes(dataGather);
-      }
-      else {
-        if(currentFile['data'] == null) { currentFile['data'] = []; }
+      } else {
+        if (currentFile['data'] == null) {
+          currentFile['data'] = [];
+        }
         currentFile['data'].addAll(dataGather);
       }
       dataGather.clear();

@@ -5,3 +5,4 @@ packages/
 packages
 out/
 .packages
+.dart_tool/
